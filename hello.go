@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,8 +25,17 @@ func main() {
 		var samples []Config
 		buf := make([]byte, 2048)
 		n, _ := c.Request.Body.Read(buf)
-		json.Unmarshal(buf[0:n], &samples)
-		c.String(http.StatusOK, "Hello!! %s", samples)
+		for i := range lines {
+			if lines[i] != "" {
+				//if err := json.Unmarshal([]byte(lines[i]), &wikis); err != nil {
+				if err := json.Unmarshal([]byte(lines[i]), &jsonline); err != nil {
+					log.Fatal(err)
+					wikis = append(wikis, jsonline)
+				}
+			}
+		}
+		err := json.Unmarshal(buf[0:n], &samples)
+		c.String(http.StatusOK, "Hello!! %s", err)
 	})
 	r.Run()
 }
