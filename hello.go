@@ -2,43 +2,33 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type Wiki struct {
+type User struct {
 	Name string `json:"name"`
 }
 
 func main() {
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
+	route := gin.Default()
+	route.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello,World!")
 	})
-	r.GET("/user/:name", func(c *gin.Context) {
+	route.GET("/user/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		c.String(http.StatusOK, "Hello %s", name)
 	})
-	r.POST("/", func(c *gin.Context) {
-		// var samples []Config
+	route.POST("/", func(c *gin.Context) {
+		var user User
 		buf := make([]byte, 2048)
 		n, _ := c.Request.Body.Read(buf)
-		var lines []string
-		var wikis []Wiki
-		var jsonline Wiki
-		for i := range lines {
-			if lines[i] != "" {
-				//if err := json.Unmarshal([]byte(lines[i]), &wikis); err != nil {
-				if err := json.Unmarshal([]byte(lines[i]), &jsonline); err != nil {
-					log.Fatal(err)
-					wikis = append(wikis, jsonline)
-				}
-			}
+		if err := json.Unmarshal(buf[0:n], &user); err != nil {
+			c.String(http.StatusBadRequest, "json parameter is invalid.")
+		} else {
+			c.String(http.StatusOK, "Hello!!%s", user.Name)
 		}
-		// err := json.Unmarshal(buf[0:n], &samples)
-		c.String(http.StatusOK, "Hello!! %s", wikis)
 	})
-	r.Run()
+	route.Run()
 }
